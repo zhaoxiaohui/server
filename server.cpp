@@ -49,10 +49,10 @@ server::server(const std::string& address, const std::string& port,
 void server::run()
 {
   // Create a pool of threads to run all of the io_services.
-  std::vector<boost::shared_ptr<asio::thread> > threads;
+  std::vector<boost::shared_ptr<boost::thread> > threads;
   for (std::size_t i = 0; i < thread_pool_size_; ++i)
   {
-    boost::shared_ptr<asio::thread> thread(new asio::thread(
+    boost::shared_ptr<boost::thread> thread(new boost::thread(
           boost::bind(&asio::io_service::run, &io_service_)));
     threads.push_back(thread);
   }
@@ -70,7 +70,7 @@ void server::start_accept()
         asio::placeholders::error));
 }
 
-void server::handle_accept(const asio::error_code& e)
+void server::handle_accept(const error_code& e)
 {
   if (!e)
   {

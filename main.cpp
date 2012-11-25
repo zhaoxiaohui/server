@@ -10,10 +10,12 @@
 
 #include <iostream>
 #include <string>
-#include <asio.hpp>
+#include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
 #include "server.hpp"
+
+using namespace boost;
 
 int main(int argc, char* argv[])
 {

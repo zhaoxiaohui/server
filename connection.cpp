@@ -38,7 +38,7 @@ void connection::start()
           asio::placeholders::bytes_transferred)));
 }
 
-void connection::handle_read(const asio::error_code& e,
+void connection::handle_read(const error_code& e,
     std::size_t bytes_transferred)
 {
   if (!e)
@@ -79,12 +79,12 @@ void connection::handle_read(const asio::error_code& e,
   // handler returns. The connection class's destructor closes the socket.
 }
 
-void connection::handle_write(const asio::error_code& e)
+void connection::handle_write(const error_code& e)
 {
   if (!e)
   {
     // Initiate graceful connection closure.
-    asio::error_code ignored_ec;
+    error_code ignored_ec;
     socket_.shutdown(asio::ip::tcp::socket::shutdown_both, ignored_ec);
   }
 
