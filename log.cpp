@@ -8,13 +8,8 @@ namespace http{
             cur_path = boost::filesystem::current_path();
             boost::filesystem::path bfp = cur_path / DIRECTORY;
             cur_path = bfp;
-            fout = NULL;
-            if(!boost::filesystem::exist(bfp) || !boost::filesystem::is_directory(bfp)){
-                try{
+            if(!boost::filesystem::exists(bfp) || !boost::filesystem::is_directory(bfp)){
                     boost::filesystem::create_directory(bfp);
-                }catch(Exception e){
-                    std::cerr<<"Error:"<<e.what()<<"\n";
-                }
             }
         }
 
@@ -26,7 +21,7 @@ namespace http{
         void Log::record(string message){
             string filename = getFileName();
             if(checkOrCreate(filename)){
-                fout<<message<<"\n";
+				fout<<getCurTime()<<" "<<message<<"\n";
             }else{
                 std:cerr<<"Error:record failed\n";
             }
@@ -35,28 +30,39 @@ namespace http{
 
         bool Log::checkOrCreate(string filename){
             boost::filesystem::path bfp = cur_path / filename;
-            if(boost::filesystem::exist(bfp)){
-                if(fout == NULL){/*文件还没有打开*/
-                    fout.open(bfp.file_string().c_str(),ios::app);
+            if(boost::filesystem::exists(bfp)){
+                if(!fout){/*文件还没有打开*/
+                    fout.open(bfp.string().c_str(),ios::app);
                 }
                 return true;
             }else{
-                try{
-                    boost::filesystem::create_directory(bfp);
-                    /*创建新的文件的时候 就设置输出流*/
-                    fout.open(bfp.file_string().c_str(),ios::app);
-                    return true;
-                }catch(Exception e){
-                    std::cerr<<"Error:"<<e.what()<<"\n";
-                    return false;
-                }
+                //boost::filesystem::create_directory(bfp);
+				if(!fout){
+					fout.close();//关闭上一个文件
+				}
+                /*创建新的文件的时候 就设置输出流*/
+                fout.open(bfp.string().c_str(),ios::app);
+                return true;
             }
         }
 
+		string Log::getCurTime(){
+			struct tm *now_t;         //实例化tm结构指针
+			time_t cur_t;
+			now_t = localtime(&cur_t);
+			char cur[20];
+			sprintf(cur,"%04d-%02d-%02d %02d:%02d:%02d",now_t->tm_year+1900, now_t->tm_mon+1, now_t->tm_mday, now_t->tm_hour,\
+							now_t->tm_min, now_t->tm_sec);
+			string res = cur;
+			return res;
+		}
+
         string Log::getFileName(){
-            CTime now_t=CTime::GetCurrentTime();
-            char cur[15]
-            sprintf(cur,"%04d%02d%02d.txt", now_t.getYear(), now_t.getMonth(), now_t.getDay());
+            struct tm *now_t;
+			time_t cur_t;
+			now_t = localtime(&cur_t);
+            char cur[15];
+            sprintf(cur, "%04d%02d%02d.txt", now_t->tm_year+1900, now_t->tm_mon+1, now_t->tm_mday);
             string res = cur;
             return res;
         }

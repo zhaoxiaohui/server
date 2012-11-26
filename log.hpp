@@ -18,20 +18,24 @@ using namespace std;
 
 namespace http{
     namespace server3{
-    class Log{
+	class Log{
         public:
             /*记录日志*/
             void record(string message);
+			Log();
+			~Log();
         private:
+			/*获得系统当前时间 年-月-日 时:分:秒*/
+			string getCurTime();
             /*取得当前要往哪个文件写入内容 文件名字以当天的日期为准*/
             string getFileName();
             /*检查当前要写入的文件是否已经存在*/
-            bool checkOrCreate(fileName);
+            bool checkOrCreate(string fileName);
             /*当前工作路径*/
             boost::filesystem::path cur_path;
             /*当前的输出流*/
             ofstream fout;
-    }//end class
+    };//end class
     }//end namespace server3
 }//end namespace http
-#endif __LOG_HP__
+#endif// __LOG_HP__

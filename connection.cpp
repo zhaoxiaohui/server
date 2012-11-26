@@ -10,7 +10,9 @@
 
 #include "connection.hpp"
 #include <vector>
+#include <sstream>
 #include <boost/bind.hpp>
+#include <boost/lexical_cast.hpp>
 #include "request_handler.hpp"
 
 namespace http {
@@ -38,6 +40,16 @@ void connection::start()
           asio::placeholders::bytes_transferred)));
 }
 
+std::string toString(short unsigned int num){
+	std::ostringstream oss;
+	oss<<num;
+	return oss.str();
+}
+std::string toString(int num){
+	std::ostringstream oss;
+	oss<<num;
+	return oss.str();
+}
 void connection::handle_read(const error_code& e,
     std::size_t bytes_transferred)
 {
@@ -48,9 +60,15 @@ void connection::handle_read(const error_code& e,
     boost::tie(result, boost::tuples::ignore) = request_parser_.parse(
         request_, buffer_.data(), buffer_.data() + bytes_transferred);
     //std::cout<<"request:"<<request_.uri<<"\n";
+	string mess_r = "Client[" + socket_.remote_endpoint().address().to_string() + ":" + toString(socket_.remote_endpoint().port()) +\
+					  "] request file " + request_.uri;
+   	//记录 请求信息
+	log.record(mess_r);
+
     if (result)
     {
-        std::cout<<"Requst: "<<request_.uri<<"\n";
+			
+		std::cout<<"Requst: "<<request_.uri<<"\n";
       request_handler_.handle_request(request_, reply_);
       asio::async_write(socket_, reply_.to_buffers(),
           strand_.wrap(
@@ -88,6 +106,13 @@ void connection::handle_write(const error_code& e)
     // Initiate graceful connection closure.
     error_code ignored_ec;
     socket_.shutdown(asio::ip::tcp::socket::shutdown_both, ignored_ec);
+	string mess_s = "Successfully send file " + request_.uri + " with " + boost::lexical_cast<std::string>(reply_.content.size())+ " bytes to clien[" +\
+					 socket_.remote_endpoint().address().to_string() + ":" + toString(socket_.remote_endpoint().port()) + "]";
+	log.record(mess_s);
+  }else{
+  	string mess_f = "Failed to send file " + request_.uri + " to client[" + socket_.remote_endpoint().address().to_string() + ":"  +\
+					 toString(socket_.remote_endpoint().port()) + "] due to error ";
+	log.record(mess_f);
   }
 
   // No new asynchronous operations are started. This means that all shared_ptr

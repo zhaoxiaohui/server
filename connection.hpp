@@ -20,7 +20,7 @@
 #include "request.hpp"
 #include "request_handler.hpp"
 #include "request_parser.hpp"
-
+#include "log.hpp"
 using namespace boost;
 using boost::system::error_code;
 namespace http {
@@ -70,6 +70,9 @@ namespace http {
 
   			/// The reply to be sent back to the client.
   			reply reply_;
+
+			///日志记录
+			Log log;
 		};
 
 		typedef boost::shared_ptr<connection> connection_ptr;
