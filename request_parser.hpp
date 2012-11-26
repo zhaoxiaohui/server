@@ -13,7 +13,7 @@
 
 #include <boost/logic/tribool.hpp>
 #include <boost/tuple/tuple.hpp>
-
+#include <iostream>
 namespace http {
 namespace server3 {
 
@@ -39,11 +39,12 @@ public:
   {
     while (begin != end)
     {
+      //  std::cout<<"\nconsume\n";
       boost::tribool result = consume(req, *begin++);
       if (result || !result)
         return boost::make_tuple(result, begin);
     }
-    boost::tribool result = boost::indeterminate;
+    boost::tribool result = boost::indeterminate;//不确定类型
     return boost::make_tuple(result, begin);
   }
 
