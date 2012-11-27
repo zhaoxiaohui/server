@@ -38,6 +38,8 @@ namespace http{
             boost::filesystem::path cur_path;
             /*当前的输出流*/
             ofstream fout;
+			/*每当100次请求之后 主动更新文件*/
+			int req_num;
     };//end class
     }//end namespace server3
 }//end namespace http

@@ -11,6 +11,7 @@ namespace http{
             if(!boost::filesystem::exists(bfp) || !boost::filesystem::is_directory(bfp)){
                     boost::filesystem::create_directory(bfp);
             }
+			req_num = 0;
             std::cout<<"create log\n";
         }
 
@@ -26,6 +27,11 @@ namespace http{
             return &clog;
         }
         void Log::record(string message){
+			req_num++;
+			if(req_num == 100){
+				req_num = 0;
+				if(fout)fout.close();
+			}
             string filename = getFileName();
             if(checkOrCreate(filename)){
 				fout << getCurTime() << " " << message << "\n";
