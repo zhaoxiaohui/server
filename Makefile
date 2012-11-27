@@ -1,7 +1,7 @@
 all: hps
 
 hps: main.o server.o connection.o request_handler.o reply.o request_parser.o mime_types.o log.o file_cache.o
-	g++ -o hps -lboost_thread -lboost_system -lboost_filesystem -lpthread main.o server.o log.o connection.o request_handler.o reply.o request_parser.o mime_types.o file_cache.o
+	g++ -g -o hps -lboost_thread -lboost_system -lboost_filesystem -lpthread main.o server.o log.o connection.o request_handler.o reply.o request_parser.o mime_types.o file_cache.o
 
 main.o: main.cpp server.hpp
 	g++ -o main.o -c main.cpp

@@ -79,18 +79,28 @@ void connection::handle_read(const error_code& e,
 				asio::async_write(socket_, rep->to_buffers(),
 					strand_.wrap(
 						boost::bind(&connection::handle_write, shared_from_this(),
-						asio::placeholders::error, address, port)));
+						asio::placeholders::error, address, port, rep)));
 		}else{
       		request_handler_.handle_request(request_, reply_);
-			reply *rep = (reply *)malloc(sizeof(reply));
-			rep->content = reply_.content;
-			rep->headers = reply_.headers;
-			rep->status = reply_.status;
-			file_c->insert(request_.uri, rep);
+			//reply *rep = (reply *)malloc(sizeof(reply));
+			if(reply_.status == reply::ok){
+				reply *rep = new reply();
+				if(!rep){
+					std::cerr<<"read failed for failed to malloc reply\n";
+					return;
+				}
+				//std::cout<<"content\n";
+				rep->content = reply_.content;
+				//std::cout<<"header\n";
+				rep->headers = reply_.headers;
+				//std::cout<<"status\n";
+				rep->status = reply_.status;
+				file_c->insert(request_.uri, rep);
+			}
       		asio::async_write(socket_, reply_.to_buffers(),
           		strand_.wrap(
             		boost::bind(&connection::handle_write, shared_from_this(),
-              		asio::placeholders::error, address, port)));
+              		asio::placeholders::error, address, port, &reply_)));
 		}
     }
     else if (!result)
@@ -99,7 +109,7 @@ void connection::handle_read(const error_code& e,
       asio::async_write(socket_, reply_.to_buffers(),
           strand_.wrap(
             boost::bind(&connection::handle_write, shared_from_this(),
-              asio::placeholders::error, address, port)));
+              asio::placeholders::error, address, port, &reply_)));
     }
     else
     {
@@ -117,7 +127,7 @@ void connection::handle_read(const error_code& e,
   // handler returns. The connection class's destructor closes the socket.
 }
 
-void connection::handle_write(const error_code& e, std::string address, std::string port)
+void connection::handle_write(const error_code& e, std::string address, std::string port, reply *rep)
 {
     string mess_r = "Client[" + address + ":" + port + "] request file " + request_.uri;
     //记录 请求信息
@@ -129,8 +139,8 @@ void connection::handle_write(const error_code& e, std::string address, std::str
     socket_.shutdown(asio::ip::tcp::socket::shutdown_both, ignored_ec);
 	
 	string mess_s;
-	if(reply_.status == reply::ok){
-		mess_s = "Successfully send file " + request_.uri + " with " + boost::lexical_cast<std::string>(reply_.content.size())+ " bytes to clien[" +\
+	if(rep->status == reply::ok){
+		mess_s = "Successfully send file " + request_.uri + " with " + boost::lexical_cast<std::string>(rep->content.size())+ " bytes to clien[" +\
 					 address + ":" + port + "]";
 	}else{
 		mess_s = "Failed to send file " + request_.uri + " to client[" + address + ":" + port + "] due to bad request";
