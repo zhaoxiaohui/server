@@ -14,6 +14,7 @@
 #include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
 #include "request_handler.hpp"
+#include "file_cache.hpp"
 
 namespace http {
 namespace server3 {
@@ -25,6 +26,7 @@ connection::connection(asio::io_service& io_service,
     request_handler_(handler)
 {
     log = Log::getInstance();
+	file_c = file_cache::getInstance();
 }
 
 asio::ip::tcp::socket& connection::socket()
@@ -72,11 +74,24 @@ void connection::handle_read(const error_code& e,
     {
 			
 		std::cout<<"Requst: "<<request_.uri<<"\n";
-      request_handler_.handle_request(request_, reply_);
-      asio::async_write(socket_, reply_.to_buffers(),
-          strand_.wrap(
-            boost::bind(&connection::handle_write, shared_from_this(),
-              asio::placeholders::error, address, port)));
+		reply *rep = file_c->hasKey(request_.uri);
+		if(rep){
+				asio::async_write(socket_, rep->to_buffers(),
+					strand_.wrap(
+						boost::bind(&connection::handle_write, shared_from_this(),
+						asio::placeholders::error, address, port)));
+		}else{
+      		request_handler_.handle_request(request_, reply_);
+			reply *rep = (reply *)malloc(sizeof(reply));
+			rep->content = reply_.content;
+			rep->headers = reply_.headers;
+			rep->status = reply_.status;
+			file_c->insert(request_.uri, rep);
+      		asio::async_write(socket_, reply_.to_buffers(),
+          		strand_.wrap(
+            		boost::bind(&connection::handle_write, shared_from_this(),
+              		asio::placeholders::error, address, port)));
+		}
     }
     else if (!result)
     {

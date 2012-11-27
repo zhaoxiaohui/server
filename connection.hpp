@@ -21,6 +21,7 @@
 #include "request_handler.hpp"
 #include "request_parser.hpp"
 #include "log.hpp"
+#include "file_cache.hpp"
 
 using namespace boost;
 using boost::system::error_code;
@@ -74,6 +75,9 @@ namespace http {
 
 			///日志记录
 			Log* log;
+
+			///缓存
+			file_cache *file_c;
 		};
 
 		typedef boost::shared_ptr<connection> connection_ptr;
