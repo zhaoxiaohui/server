@@ -73,7 +73,7 @@ void connection::handle_read(const error_code& e,
       asio::async_write(socket_, reply_.to_buffers(),
           strand_.wrap(
             boost::bind(&connection::handle_write, shared_from_this(),
-              asio::placeholders::error)));
+              asio::placeholders::error, &result)));
     }
     else if (!result)
     {
@@ -81,7 +81,7 @@ void connection::handle_read(const error_code& e,
       asio::async_write(socket_, reply_.to_buffers(),
           strand_.wrap(
             boost::bind(&connection::handle_write, shared_from_this(),
-              asio::placeholders::error)));
+              asio::placeholders::error, &result)));
     }
     else
     {
@@ -99,15 +99,22 @@ void connection::handle_read(const error_code& e,
   // handler returns. The connection class's destructor closes the socket.
 }
 
-void connection::handle_write(const error_code& e)
+void connection::handle_write(const error_code& e, const  boost::tribool &result)
 {
   if (!e)
   {
     // Initiate graceful connection closure.
     error_code ignored_ec;
     socket_.shutdown(asio::ip::tcp::socket::shutdown_both, ignored_ec);
-	string mess_s = "Successfully send file " + request_.uri + " with " + boost::lexical_cast<std::string>(reply_.content.size())+ " bytes to clien[" +\
+	
+	string mess_s;
+	if(result){
+		mess_s = "Successfully send file " + request_.uri + " with " + boost::lexical_cast<std::string>(reply_.content.size())+ " bytes to clien[" +\
 					 socket_.remote_endpoint().address().to_string() + ":" + toString(socket_.remote_endpoint().port()) + "]";
+	}else{
+		mess_s = "Failed to send file " + request_.uri + " to client[" + socket_.remote_endpoint().address().to_string() + ":" +\
+				  toString(socket_.remote_endpoint().port()) + "] due to bad request";
+	}
 	log.record(mess_s);
   }else{
   	string mess_f = "Failed to send file " + request_.uri + " to client[" + socket_.remote_endpoint().address().to_string() + ":"  +\

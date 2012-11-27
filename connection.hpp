@@ -48,7 +48,7 @@ namespace http {
       			std::size_t bytes_transferred);
 
   			/// Handle completion of a write operation.
-  			void handle_write(const error_code& e);
+  			void handle_write(const error_code& e, const boost::tribool& result);
 
   			/// Strand to ensure the connection's handlers are not called concurrently.
   			asio::io_service::strand strand_;
