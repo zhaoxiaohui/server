@@ -21,6 +21,7 @@
 #include "request_handler.hpp"
 #include "request_parser.hpp"
 #include "log.hpp"
+
 using namespace boost;
 using boost::system::error_code;
 namespace http {
@@ -48,7 +49,7 @@ namespace http {
       			std::size_t bytes_transferred);
 
   			/// Handle completion of a write operation.
-  			void handle_write(const error_code& e, const boost::tribool& result);
+  			void handle_write(const error_code& e, std::string address, std::string port);
 
   			/// Strand to ensure the connection's handlers are not called concurrently.
   			asio::io_service::strand strand_;
@@ -72,7 +73,7 @@ namespace http {
   			reply reply_;
 
 			///日志记录
-			Log log;
+			Log* log;
 		};
 
 		typedef boost::shared_ptr<connection> connection_ptr;

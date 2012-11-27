@@ -24,6 +24,7 @@ connection::connection(asio::io_service& io_service,
     socket_(io_service),
     request_handler_(handler)
 {
+    log = Log::getInstance();
 }
 
 asio::ip::tcp::socket& connection::socket()
@@ -60,11 +61,13 @@ void connection::handle_read(const error_code& e,
     boost::tie(result, boost::tuples::ignore) = request_parser_.parse(
         request_, buffer_.data(), buffer_.data() + bytes_transferred);
     //std::cout<<"request:"<<request_.uri<<"\n";
-	string mess_r = "Client[" + socket_.remote_endpoint().address().to_string() + ":" + toString(socket_.remote_endpoint().port()) +\
+	//string mess_r = "Client[" + socket_.remote_endpoint().address().to_string() + ":" + toString(socket_.remote_endpoint().port()) +\
 					  "] request file " + request_.uri;
    	//记录 请求信息
-	log.record(mess_r);
-
+	//log->record(mess_r);
+    //std::cout<<"record"<<"\n";
+    std::string address = socket_.remote_endpoint().address().to_string();
+    std::string port = toString(socket_.remote_endpoint().port());
     if (result)
     {
 			
@@ -73,7 +76,7 @@ void connection::handle_read(const error_code& e,
       asio::async_write(socket_, reply_.to_buffers(),
           strand_.wrap(
             boost::bind(&connection::handle_write, shared_from_this(),
-              asio::placeholders::error, &result)));
+              asio::placeholders::error, address, port)));
     }
     else if (!result)
     {
@@ -81,7 +84,7 @@ void connection::handle_read(const error_code& e,
       asio::async_write(socket_, reply_.to_buffers(),
           strand_.wrap(
             boost::bind(&connection::handle_write, shared_from_this(),
-              asio::placeholders::error, &result)));
+              asio::placeholders::error, address, port)));
     }
     else
     {
@@ -99,8 +102,11 @@ void connection::handle_read(const error_code& e,
   // handler returns. The connection class's destructor closes the socket.
 }
 
-void connection::handle_write(const error_code& e, const  boost::tribool &result)
+void connection::handle_write(const error_code& e, std::string address, std::string port)
 {
+    string mess_r = "Client[" + address + ":" + port + "] request file " + request_.uri;
+    //记录 请求信息
+  log->record(mess_r);
   if (!e)
   {
     // Initiate graceful connection closure.
@@ -108,18 +114,16 @@ void connection::handle_write(const error_code& e, const  boost::tribool &result
     socket_.shutdown(asio::ip::tcp::socket::shutdown_both, ignored_ec);
 	
 	string mess_s;
-	if(result){
+	if(reply_.status == reply::ok){
 		mess_s = "Successfully send file " + request_.uri + " with " + boost::lexical_cast<std::string>(reply_.content.size())+ " bytes to clien[" +\
-					 socket_.remote_endpoint().address().to_string() + ":" + toString(socket_.remote_endpoint().port()) + "]";
+					 address + ":" + port + "]";
 	}else{
-		mess_s = "Failed to send file " + request_.uri + " to client[" + socket_.remote_endpoint().address().to_string() + ":" +\
-				  toString(socket_.remote_endpoint().port()) + "] due to bad request";
+		mess_s = "Failed to send file " + request_.uri + " to client[" + address + ":" + port + "] due to bad request";
 	}
-	log.record(mess_s);
+	log->record(mess_s);
   }else{
-  	string mess_f = "Failed to send file " + request_.uri + " to client[" + socket_.remote_endpoint().address().to_string() + ":"  +\
-					 toString(socket_.remote_endpoint().port()) + "] due to error ";
-	log.record(mess_f);
+  	string mess_f = "Failed to send file " + request_.uri + " to client[" + address + ":" + port  + "] due to error ";
+	log->record(mess_f);
   }
 
   // No new asynchronous operations are started. This means that all shared_ptr

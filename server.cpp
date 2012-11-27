@@ -74,6 +74,7 @@ void server::handle_accept(const error_code& e)
 {
   if (!e)
   {
+    /*new log message here*/
     new_connection_->start();
   }
 

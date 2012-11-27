@@ -22,9 +22,12 @@ namespace http{
         public:
             /*记录日志*/
             void record(string message);
-			Log();
-			~Log();
+			static Log* getInstance();
+            //static Log* clog;
+            ~Log();
         private:
+            /*单例模式*/
+            Log();
 			/*获得系统当前时间 年-月-日 时:分:秒*/
 			string getCurTime();
             /*取得当前要往哪个文件写入内容 文件名字以当天的日期为准*/
