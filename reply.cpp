@@ -15,6 +15,22 @@
 namespace http {
 namespace server3 {
 
+const std::string ok_                     = "OK";
+const std::string created_                = "Created";
+const std::string accepted_               = "Accepted";
+const std::string no_content_             = "No Content";
+const std::string multiple_choices_       = "Multiple Choices";
+const std::string moved_permanently_      = "Moved Permenantly";
+const std::string moved_temporarily_      = "Moved Temporarily";
+const std::string not_modified_           = "Not Modified";
+const std::string bad_request_            = "Bad Request";
+const std::string unauthorized_           = "Unauthorized";
+const std::string forbidden_              = "Forbidden";
+const std::string not_found_              = "Not Found";
+const std::string internal_server_error_  = "Internal Server Error";
+const std::string not_implemented_        = "Not Implemented";
+const std::string bad_gateway_            = "Bad Gateway";
+const std::string service_unavailable_    = "Service Unavailable";
 namespace status_strings {
 
 const std::string ok =
@@ -116,6 +132,48 @@ std::vector<asio::const_buffer> reply::to_buffers()
   buffers.push_back(asio::buffer(content));
   return buffers;
 }
+
+std::string reply::to_string(reply::status_type status)
+{
+  switch (status)
+  {
+  case reply::ok:
+    return ok_;
+  case reply::created:
+    return created_;
+  case reply::accepted:
+    return accepted_;
+  case reply::no_content:
+    return no_content_;
+  case reply::multiple_choices:
+    return multiple_choices_;
+  case reply::moved_permanently:
+    return moved_permanently_;
+  case reply::moved_temporarily:
+    return moved_temporarily_;
+  case reply::not_modified:
+    return not_modified_;
+  case reply::bad_request:
+    return bad_request_;
+  case reply::unauthorized:
+    return unauthorized_;
+  case reply::forbidden:
+    return forbidden_;
+  case reply::not_found:
+    return not_found_;
+  case reply::internal_server_error:
+    return internal_server_error_;
+  case reply::not_implemented:
+    return not_implemented_;
+  case reply::bad_gateway:
+    return bad_gateway_;
+  case reply::service_unavailable:
+    return service_unavailable_;
+  default:
+    return internal_server_error_;
+  }
+}
+
 
 namespace stock_replies {
 

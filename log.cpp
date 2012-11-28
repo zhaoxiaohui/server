@@ -12,7 +12,7 @@ namespace http{
                     boost::filesystem::create_directory(bfp);
             }
 			req_num = 0;
-            std::cout<<"create log\n";
+            //std::cout<<"create log\n";
         }
 
         Log::~Log(){

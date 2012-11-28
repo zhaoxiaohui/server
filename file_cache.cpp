@@ -40,8 +40,8 @@ namespace http{
 			if(rit != m_cache.end()){
 				//重新确定size大小
 				size_ -= rit->second->reply_->content.size();
-				free(rit->second->reply_);
-				free(rit->second);
+				delete rit->second->reply_;
+				delete rit->second;
 				m_cache.erase(rit);
 			}
 		}
@@ -58,7 +58,7 @@ namespace http{
 			while(size_ >= CACHE_MAXSIZE)
 				remove();
 			
-			m_content *mc = (m_content *)malloc(sizeof(m_content));
+			m_content *mc = new m_content();//(m_content *)malloc(sizeof(m_content));
 			if(!mc){
 				std::cerr<<"insert error for malloc failed\n";
 				return;

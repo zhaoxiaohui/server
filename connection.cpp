@@ -143,7 +143,7 @@ void connection::handle_write(const error_code& e, std::string address, std::str
 		mess_s = "Successfully send file " + request_.uri + " with " + boost::lexical_cast<std::string>(rep->content.size())+ " bytes to clien[" +\
 					 address + ":" + port + "]";
 	}else{
-		mess_s = "Failed to send file " + request_.uri + " to client[" + address + ":" + port + "] due to bad request";
+		mess_s = "Failed to send file " + request_.uri + " to client[" + address + ":" + port + "] due to " + rep->to_string(rep->status);
 	}
 	log->record(mess_s);
   }else{
