@@ -147,7 +147,7 @@ void connection::handle_write(const error_code& e, std::string address, std::str
 	}
 	log->record(mess_s);
   }else{
-  	string mess_f = "Failed to send file " + request_.uri + " to client[" + address + ":" + port  + "] due to error ";
+  	string mess_f = "Failed to send file " + request_.uri + " to client[" + address + ":" + port  + "] due to error " + e.message() ;
 	log->record(mess_f);
   }
 
