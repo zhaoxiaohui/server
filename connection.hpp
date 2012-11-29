@@ -50,7 +50,19 @@ namespace http {
       			std::size_t bytes_transferred);
 
   			/// Handle completion of a write operation.
-  			void handle_write(const error_code& e, std::string address, std::string port, reply *rep);
+  			void handle_write(const error_code& e, reply *rep);
+
+            ///检查连接是否超时
+            void check_connection_end(const error_code& e);
+
+            ///start to read
+            void start_read();
+
+            ///check is the socket is already closed
+            const bool stopped();
+
+            ///timeout then stop socket
+            void stop();
 
   			/// Strand to ensure the connection's handlers are not called concurrently.
   			asio::io_service::strand strand_;
@@ -73,11 +85,19 @@ namespace http {
   			/// The reply to be sent back to the client.
   			reply reply_;
 
+            ///远端连接地址
+            std::string address_;
+            std::string port_;
+
 			///日志记录
 			Log* log;
 
 			///缓存
 			file_cache *file_c;
+
+            ///设定连接时间
+            asio::deadline_timer connection_timer;
+
 		};
 
 		typedef boost::shared_ptr<connection> connection_ptr;

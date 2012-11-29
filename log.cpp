@@ -27,7 +27,8 @@ namespace http{
             return &clog;
         }
         void Log::record(string message){
-			req_num++;
+            std::cout << message <<"\n";
+            req_num++;
 			if(req_num == 100){
 				req_num = 0;
 				if(fout)fout.close();
@@ -35,7 +36,7 @@ namespace http{
             string filename = getFileName();
             if(checkOrCreate(filename)){
 				fout << getCurTime() << " " << message << "\n";
-                std::cout<<message<<"\n";
+                //std::cout<<message<<"\n";
             }else{
                 std:cerr<<"Error:record failed\n";
             }
@@ -47,7 +48,7 @@ namespace http{
             if(boost::filesystem::exists(bfp)){
                 if(!fout){/*文件还没有打开*/
                     fout.open(bfp.string().c_str(), ios::app);
-                    std::cout << "open file" <<"\n";
+                    //std::cout << "open file" <<"\n";
                 }
                 return true;
             }else{
