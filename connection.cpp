@@ -201,7 +201,7 @@ void connection::handle_write(const error_code& e, reply *rep)
 {
     //如果连接已经断开 则放弃写回
     if(stopped())return;
-    string mess_r = toString(connection_num) + " Client[" + address_ + ":" + port_ + "] request file " + request_.uri;
+    string mess_r = "Client[" + address_ + ":" + port_ + "] request file " + request_.uri;
     //记录 请求信息
     log->record(mess_r);
     if (!e)
@@ -212,7 +212,7 @@ void connection::handle_write(const error_code& e, reply *rep)
 	
 	    string mess_s;
 	    if(rep->status == reply::ok){
-		    mess_s = toString(connection_num) + " Successfully send file " + request_.uri + " with " + boost::lexical_cast<std::string>(rep->content.size())+ " bytes to clien[" +\
+		    mess_s = "Successfully send file " + request_.uri + " with " + boost::lexical_cast<std::string>(rep->content.size())+ " bytes to clien[" +\
 					 address_ + ":" + port_ + "]";
 	    }else{
 		    mess_s = "Failed to send file " + request_.uri + " to client[" + address_ + ":" + port_ + "] due to " + rep->to_string(rep->status);
