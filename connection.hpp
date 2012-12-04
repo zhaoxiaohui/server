@@ -42,7 +42,7 @@ namespace http {
   			asio::ip::tcp::socket& socket();
 
  			 /// Start the first asynchronous operation for the connection.
-  			void start();
+  			void start(int& connection_num);
 
 			private:
   			/// Handle completion of a read operation.
@@ -97,6 +97,9 @@ namespace http {
 
             ///设定连接时间
             asio::deadline_timer connection_timer;
+
+			///连接个数
+			int connection_num;
 
 		};
 

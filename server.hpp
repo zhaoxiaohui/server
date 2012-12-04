@@ -65,6 +65,9 @@ namespace http {
 
   			/// The handler for all incoming requests.
   			request_handler request_handler_;
+			
+			///连接个数
+			int connection_num;
 		};
 
 	} // namespace server3

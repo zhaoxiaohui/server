@@ -43,6 +43,7 @@ server::server(const std::string& address, const std::string& port,
   acceptor_.bind(endpoint);
   acceptor_.listen();
 
+  connection_num = 0;
   start_accept();
 }
 
@@ -75,7 +76,7 @@ void server::handle_accept(const error_code& e)
   if (!e)
   {
     /*new log message here*/
-    new_connection_->start();
+    new_connection_->start(connection_num);
   }
 
   start_accept();
