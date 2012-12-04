@@ -4,9 +4,9 @@
 namespace http{
     namespace server3{
         
-        Log::Log()/*:
-			write_timer(io_service),
-			strand_(io_service)*/{
+        Log::Log(boost::asio::io_service& io_service_):
+			write_timer(io_service_),
+			strand_(io_service_){
             /*如果当前文件目录下 不存在logs目录 则创建*/
             cur_path = boost::filesystem::current_path();
             boost::filesystem::path bfp = cur_path / DIRECTORY;
@@ -16,34 +16,33 @@ namespace http{
             }
 			//req_num = 0;
             //std::cout<<"create log\n";
-			/**
-			write_timer.expires_from_now(boost::posix_time::seconds(60));
+			
+			write_timer.expires_from_now(boost::posix_time::seconds(PERWRITE));
 			write_timer.async_wait(
 				strand_.wrap(boost::bind(&Log::write_back,
 					this, boost::asio::placeholders::error)));
 			
-			*/
+			
         }
-		/**
+		
 		void Log::write_back(const error_code& e){
-			if(fout){
-				//fout.close();
-				std::cout << "record message\n"; 
+			if(messages.size() > 0){
+				record_();
 			}
-			write_timer.expires_from_now(boost::posix_time::seconds(60));
+			write_timer.expires_from_now(boost::posix_time::seconds(PERWRITE));
 			write_timer.async_wait(
 				strand_.wrap(boost::bind(&Log::write_back,
 					this, boost::asio::placeholders::error)));
 		}
-		*/
+
         Log::~Log(){
             /*关闭文件流*/
 			if(messages.size() > 0)record_();
             if(fout)fout.close();
         }
             
-        Log* Log::getInstance(){
-            static Log clog;// = new Log(io_service);
+        Log* Log::getInstance(boost::asio::io_service& io_service_){
+            static Log clog(io_service_);// = new Log(io_service);
             //if(!clog)
               //  clog = new Log();
             return &clog;
@@ -70,6 +69,7 @@ namespace http{
 
         }
 		void Log::record_(){
+			std::cout << "@@@@@record " << messages.size() << " messages now\n"; 
 			vector<string>::iterator m_it;
 			for(m_it=messages.begin(); m_it!=messages.end(); m_it++){
 				fout << *m_it << "\n";

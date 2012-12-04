@@ -27,7 +27,7 @@ connection::connection(asio::io_service& io_service,
     connection_timer(io_service)
 {
     //log = Log::getInstance(io_service);
-	log = Log::getInstance();
+	log = Log::getInstance(io_service);
 	file_c = file_cache::getInstance();
     connection_timer.expires_at(boost::posix_time::pos_infin);//不作为
 }
