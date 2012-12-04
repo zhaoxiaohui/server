@@ -1,3 +1,4 @@
+#include <sys/timeb.h>
 #include "log.hpp"
 
 namespace http{
@@ -119,17 +120,34 @@ namespace http{
         }
 
 		string Log::getCurTime(){
-			struct tm *now_t;         //实例化tm结构指针
-			time_t cur_t;
-            cur_t = time(NULL);
-			now_t = localtime(&cur_t);
-			char cur[20];
-			sprintf(cur,"%04d-%02d-%02d %02d:%02d:%02d",now_t->tm_year+1900, now_t->tm_mon+1, now_t->tm_mday, now_t->tm_hour,\
-							now_t->tm_min, now_t->tm_sec);
+			struct tm now_t;         //实例化tm结构指针
+			struct timeb tp;
+            ftime(&tp);
+			localtime_r(&tp.time, &now_t);
+			char cur[25];
+			sprintf(cur,"%04d-%02d-%02d %02d:%02d:%02d.%03d",now_t.tm_year+1900, now_t.tm_mon+1, now_t.tm_mday, now_t.tm_hour,\
+							now_t.tm_min, now_t.tm_sec, tp.millitm);
 			string res = cur;
 			return res;
 		}
-
+		/**
+		char *gettime(char *msg)
+		{
+			struct timeb tp;
+			struct tm ltime;
+			ftime(&tp);
+			localtime_r(&tp.time,&ltime);
+			sprintf(msg,"%04d-%02d-%02d %02d:%02d:%02d.%03d %d",
+			ltime.tm_year+1900,
+			ltime.tm_mon+1,
+			ltime.tm_mday,
+			ltime.tm_hour,
+			ltime.tm_min,
+			ltime.tm_sec,
+			tp.millitm,
+			ltime.tm_wday);
+			return msg;
+		}*/
         string Log::getFileName(){
             struct tm *now_t;
 			time_t cur_t;
