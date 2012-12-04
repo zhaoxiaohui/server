@@ -7,6 +7,9 @@ namespace http{
         Log::Log(boost::asio::io_service& io_service_):
 			write_timer(io_service_),
 			strand_(io_service_){
+            
+            /*设置锁*/
+            pthread_mutex_init(&(write_mutex), NULL);
             /*如果当前文件目录下 不存在logs目录 则创建*/
             cur_path = boost::filesystem::current_path();
             boost::filesystem::path bfp = cur_path / DIRECTORY;
@@ -57,11 +60,16 @@ namespace http{
 			std::string filename = getFileName();
 			int coc = checkOrCreate(filename);
             if(coc){
-				messages.push_back(getCurTime() + " " + message);
-				if(messages.size() >= 50){
-					std::cout<<"record\n";
-					record_();
-				}
+                std::string mess(getCurTime() + " " + message);
+				messages.push_back(mess/*getCurTime() + " " + message*/);
+				if(messages.size() >= MESSAGESIZE){
+				    pthread_mutex_lock(&write_mutex);
+                    //std::cout<<"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@222@@record               " << messages.size() << "\n";
+				//	strand_.wrap(boost::bind(&Log::record_, this));
+                    record_();
+                    //std::cout<<"@@@@@------               " << messages.size() <<"\n";
+				    pthread_mutex_unlock(&write_mutex);
+                }
                 //std::cout<<message<<"\n";
             }else{
                 std:cerr<<"Error:record failed\n";
@@ -75,7 +83,8 @@ namespace http{
 				fout << *m_it << "\n";
 			}
 			fout << flush;
-			messages.clear();
+            if(messages.size() > 0)
+			    messages.clear();
 		}
 		/**
 		int getNum(std::string filename){

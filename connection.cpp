@@ -81,7 +81,7 @@ void connection::check_connection_end(const error_code& e)
         if (connection_timer.expires_at() <= boost::asio::deadline_timer::traits_type::now()){
             // The deadline has passed. Stop the session. The other actors will
             // terminate as soon as possible.
-            connection::stop();
+            connection::stop();//, shared_from_this()));
         }
         else{
             // Put the actor back to sleep.

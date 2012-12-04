@@ -17,9 +17,10 @@
 #include <cstring>
 #include <ctime>
 #include <vector>
-
+#include <pthread.h>
 #define DIRECTORY "logs"
 #define PERWRITE 30
+#define MESSAGESIZE 2000
 using namespace std;
 using boost::system::error_code;
 namespace http{
@@ -55,6 +56,8 @@ namespace http{
 			boost::asio::deadline_timer write_timer;
 			void write_back(const error_code& e);
 
+            //写入锁
+            pthread_mutex_t write_mutex;
 			///缓存机制
 			vector<std::string> messages;
     };//end class
