@@ -20,14 +20,14 @@ namespace http {
 namespace server3 {
 
 connection::connection(asio::io_service& io_service,
-    request_handler& handler)
+    request_handler& handler, std::string& log_fullname)
   : strand_(io_service),
     socket_(io_service),
     request_handler_(handler),
     connection_timer(io_service)
 {
     //log = Log::getInstance(io_service);
-	log = Log::getInstance(io_service);
+	log = Log::getInstance(io_service, log_fullname);
 	file_c = file_cache::getInstance();
     connection_timer.expires_at(boost::posix_time::pos_infin);//不作为
 }
@@ -48,14 +48,14 @@ std::string toString(int num){
 	return oss.str();
 }
 
-void connection::start(int& connection_num_)
+void connection::start()
 {
 
-	connection_num = ++connection_num_;
+	//connection_num = ++connection_num_;
     address_ = socket_.remote_endpoint().address().to_string();
     port_    = toString(socket_.remote_endpoint().port());
 	//std::cout << "connection num:" << connection_num <<"\n";
-    std::cerr << connection_num << " connection start at client[" + address_  + ":" + port_  +"]\n";
+    std::cerr << "connection start at client[" + address_  + ":" + port_  +"]\n";
     connection::start_read();
     //设置连接时间
     //connection_timer.expires_from_now(boost::posix_time::seconds(60));
@@ -66,7 +66,7 @@ void connection::start(int& connection_num_)
           //asio::placeholders::error,
           //asio::placeholders::bytes_transferred)));
 
-    connection_timer.async_wait(strand_.wrap(boost::bind(&connection::check_connection_end, shared_from_this(), asio::placeholders::error)));
+    //connection_timer.async_wait(strand_.wrap(boost::bind(&connection::check_connection_end, shared_from_this(), asio::placeholders::error)));
 }
 
 void connection::check_connection_end(const error_code& e)
@@ -90,7 +90,7 @@ void connection::check_connection_end(const error_code& e)
                     boost::bind(&connection::check_connection_end,
                     shared_from_this(), asio::placeholders::error)));
         }
-    }else{
+    }else if(e !=  boost::asio::error::operation_aborted){
         std::cerr << "check connection error:" << e.message() <<"\n";
     }
 }
@@ -103,15 +103,27 @@ const bool connection::stopped(){
 void connection::stop(){
     error_code ignored_ec;
 	//std::cout << "connection num:" << --connection_num <<"\n";
-    std::cerr << connection_num <<" connection end at client[" + address_ + ":" + port_ +"]\n";
+    std::cerr <<"connection end at client[" + address_ + ":" + port_ +"]\n";
     //std::cerr << "one connection:end\n";
-    socket_.close(ignored_ec);
+    //socket_.close(ignored_ec);
+    socket_.shutdown(asio::ip::tcp::socket::shutdown_both, ignored_ec);
     connection_timer.cancel();
 }
 
 void connection::start_read(){
+    //std::cout << "start read\n";
+    request_parser_.reset();
+    request_.uri.clear();
+    request_.method.clear();
+    request_.headers.clear();
     //设置连接时间
+    
     connection_timer.expires_from_now(boost::posix_time::seconds(60));
+    connection_timer.async_wait(
+            strand_.wrap(
+                boost::bind(&connection::check_connection_end, 
+                    shared_from_this(), 
+                    asio::placeholders::error)));
     
     socket_.async_read_some(asio::buffer(buffer_),
         strand_.wrap(
@@ -147,6 +159,7 @@ void connection::handle_read(const error_code& e,
 		    //std::cout<<"Requst: "<<request_.uri<<"\n";
 		    reply *rep = file_c->hasKey(request_.uri);
 		    if(rep){
+                //std::cout << "in cache\n";
 				asio::async_write(socket_, rep->to_buffers(),
 					strand_.wrap(
 						boost::bind(&connection::handle_write, shared_from_this(),
@@ -181,12 +194,12 @@ void connection::handle_read(const error_code& e,
                     boost::bind(&connection::handle_write, shared_from_this(),
                     asio::placeholders::error, &reply_)));
         }else{
-            //socket_.async_read_some(asio::buffer(buffer_),
-            //strand_.wrap(
-            //boost::bind(&connection::handle_read, shared_from_this(),
-              //asio::placeholders::error,
-              //asio::placeholders::bytes_transferred)));
-            connection::start_read();
+            socket_.async_read_some(asio::buffer(buffer_),
+                strand_.wrap(
+                    boost::bind(&connection::handle_read, shared_from_this(),
+                    asio::placeholders::error,
+                    asio::placeholders::bytes_transferred)));
+            //connection::start_read();
         }
     }else{
         stop();//stop the connection
@@ -207,8 +220,8 @@ void connection::handle_write(const error_code& e, reply *rep)
     if (!e)
     {
         // Initiate graceful connection closure.
-        error_code ignored_ec;
-        socket_.shutdown(asio::ip::tcp::socket::shutdown_both, ignored_ec);
+        //error_code ignored_ec;
+        //socket_.shutdown(asio::ip::tcp::socket::shutdown_both, ignored_ec);
 	
 	    string mess_s;
 	    if(rep->status == reply::ok){
@@ -218,11 +231,12 @@ void connection::handle_write(const error_code& e, reply *rep)
 		    mess_s = "Failed to send file " + request_.uri + " to client[" + address_ + ":" + port_ + "] due to " + rep->to_string(rep->status);
 	    }
 	    log->record(mess_s);
+        connection::start_read();
     }else{
   	    string mess_f = "Failed to send file " + request_.uri + " to client[" + address_ + ":" + port_  + "] due to error " + e.message() ;
 	    log->record(mess_f);
     }
-
+    //connection::start_read();
     // No new asynchronous operations are started. This means that all shared_ptr
     // references to the connection object will disappear and the object will be
     // destroyed automatically after this handler returns. The connection class's

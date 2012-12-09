@@ -28,13 +28,11 @@ namespace http{
 		void file_cache::remove(){
 			std::map<std::string, m_content*>::iterator it;
 			std::map<std::string, m_content*>::iterator rit;
-			int mincount = 0x7fffffff;
+			int maxcount = 0;
 			for(it=m_cache.begin(); it!=m_cache.end(); it++){
-				if(it->second->count < mincount){
-					mincount = it->second->count;
+				if(it->second->count > maxcount){
+					maxcount = it->second->count;
 					rit = it;
-				}else{//如果其他引用大于当前最小值 那么重新赋值为1
-					it->second->count = 1;
 				}
 			}
 			if(rit != m_cache.end()){
@@ -49,9 +47,12 @@ namespace http{
 		void file_cache::insert(std::string key, reply *value){
 			
 			std::map<std::string, m_content*>::iterator it;
+            std::map<std::string, m_content*>::iterator iit;
 			it = m_cache.find(key);
 			if(it != m_cache.end()){
-				it->second->count++;
+                it->second->count = 0;
+				for(iit = m_cache.begin(); iit != m_cache.end(); iit++)
+                    iit->second->count++;
 				return;
 			}
 

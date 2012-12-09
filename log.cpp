@@ -4,9 +4,10 @@
 namespace http{
     namespace server3{
         
-        Log::Log(boost::asio::io_service& io_service_):
+        Log::Log(boost::asio::io_service& io_service_, std::string& log_fullname):
 			write_timer(io_service_),
-			strand_(io_service_){
+			strand_(io_service_),
+            log_fullname_(log_fullname){
             
             /*设置锁*/
             pthread_mutex_init(&(write_mutex), NULL);
@@ -44,8 +45,8 @@ namespace http{
             if(fout)fout.close();
         }
             
-        Log* Log::getInstance(boost::asio::io_service& io_service_){
-            static Log clog(io_service_);// = new Log(io_service);
+        Log* Log::getInstance(boost::asio::io_service& io_service_, std::string& log_fullname){
+            static Log clog(io_service_, log_fullname);// = new Log(io_service);
             //if(!clog)
               //  clog = new Log();
             return &clog;
@@ -57,8 +58,8 @@ namespace http{
 			//	req_num = 0;
 			//	strand_.wrap(boost::bind(&Log::write_back, this, boost::asio::placeholders::error));
 			//}
-			std::string filename = getFileName();
-			int coc = checkOrCreate(filename);
+			//std::string filename = getFileName();
+			int coc = checkOrCreate();
             if(coc){
                 std::string mess(getCurTime() + " " + message);
 				messages.push_back(mess/*getCurTime() + " " + message*/);
@@ -108,8 +109,9 @@ namespace http{
 
 		}
 		*/
-       	int Log::checkOrCreate(string filename){
-            boost::filesystem::path bfp = cur_path / filename;
+       	int Log::checkOrCreate(){
+            //boost::filesystem::path bfp = cur_path / filename;
+            boost::filesystem::path bfp = log_fullname_;
             if(boost::filesystem::exists(bfp)){
                 if(!fout){/*文件还没有打开*/
                     fout.open(bfp.string().c_str(), ios::app);

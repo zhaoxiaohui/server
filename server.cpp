@@ -17,12 +17,13 @@ namespace http {
 namespace server3 {
 
 server::server(const std::string& address, const std::string& port,
-    const std::string& doc_root, std::size_t thread_pool_size)
+    const std::string& doc_root, std::size_t thread_pool_size, const std::string &log_fullname)
   : thread_pool_size_(thread_pool_size),
     signals_(io_service_),
     acceptor_(io_service_),
     new_connection_(),
-    request_handler_(doc_root)
+    request_handler_(doc_root),
+    log_fullname_(log_fullname)
 {
   // Register to handle the signals that indicate when the server should exit.
   // It is safe to register for the same signal multiple times in a program,
@@ -43,7 +44,7 @@ server::server(const std::string& address, const std::string& port,
   acceptor_.bind(endpoint);
   acceptor_.listen();
 
-  connection_num = 0;
+  //connection_num = 0;
   start_accept();
 }
 
@@ -65,7 +66,7 @@ void server::run()
 
 void server::start_accept()
 {
-  new_connection_.reset(new connection(io_service_, request_handler_));
+  new_connection_.reset(new connection(io_service_, request_handler_, log_fullname_));
   acceptor_.async_accept(new_connection_->socket(),
       boost::bind(&server::handle_accept, this,
         asio::placeholders::error));
@@ -76,7 +77,7 @@ void server::handle_accept(const error_code& e)
   if (!e)
   {
     /*new log message here*/
-    new_connection_->start(connection_num);
+    new_connection_->start();
   }
 
   start_accept();

@@ -29,13 +29,13 @@ namespace http{
         public:
             /*记录日志*/
             void record(string message);
-			static Log* getInstance(boost::asio::io_service& io_service_);
+			static Log* getInstance(boost::asio::io_service& io_service_, std::string& log_fullname);
             //static Log* clog;
             ~Log();
         private:
             /*单例模式*/
             //Log(boost::asio::io_service& io_service);
-			Log(boost::asio::io_service& io_service_);
+			Log(boost::asio::io_service& io_service_, std::string& log_fullname);
 			/*获得系统当前时间 年-月-日 时:分:秒*/
 			string getCurTime();
             /*取得当前要往哪个文件写入内容 文件名字以当天的日期为准*/
@@ -43,10 +43,10 @@ namespace http{
 			///记录缓存
 			void record_();
             /*检查当前要写入的文件是否已经存在*/
-            int checkOrCreate(string fileName);
+            int checkOrCreate();
             /*当前工作路径*/
             boost::filesystem::path cur_path;
-
+            std::string log_fullname_;
 			boost::asio::strand strand_;
             /*当前的输出流*/
             ofstream fout;

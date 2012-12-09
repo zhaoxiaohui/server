@@ -36,13 +36,13 @@ namespace http {
 			public:
   			/// Construct a connection with the given io_service.
   			explicit connection(asio::io_service& io_service,
-      			request_handler& handler);
+      			request_handler& handler, std::string& log_fullname);
 
   			/// Get the socket associated with the connection.
   			asio::ip::tcp::socket& socket();
 
  			 /// Start the first asynchronous operation for the connection.
-  			void start(int& connection_num);
+  			void start();
 
 			private:
   			/// Handle completion of a read operation.
@@ -99,7 +99,7 @@ namespace http {
             asio::deadline_timer connection_timer;
 
 			///连接个数
-			int connection_num;
+			//int connection_num;
 
 		};
 

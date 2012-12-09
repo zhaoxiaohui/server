@@ -33,7 +33,7 @@ namespace http {
   			/// Construct the server to listen on the specified TCP address and port, and
   			/// serve up files from the given directory.
   			explicit server(const std::string& address, const std::string& port,
-      		const std::string& doc_root, std::size_t thread_pool_size);
+      		const std::string& doc_root, std::size_t thread_pool_size, const std::string& log_fullname);
 
   			/// Run the server's io_service loop.
   			void run();
@@ -66,8 +66,10 @@ namespace http {
   			/// The handler for all incoming requests.
   			request_handler request_handler_;
 			
+            ///log path
+            std::string log_fullname_;
 			///连接个数
-			int connection_num;
+			//int connection_num;
 		};
 
 	} // namespace server3
