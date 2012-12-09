@@ -51,7 +51,7 @@ namespace http{
               //  clog = new Log();
             return &clog;
         }
-        void Log::record(string message){
+        void Log::record(string& message){
             std::cout << "@@@@@" << message << "\n";
             //req_num++;
 			//if(req_num == 50){
@@ -61,8 +61,10 @@ namespace http{
 			//std::string filename = getFileName();
 			int coc = checkOrCreate();
             if(coc){
+                pthread_mutex_lock(&write_mutex);
                 std::string mess(getCurTime() + " " + message);
-				messages.push_back(mess/*getCurTime() + " " + message*/);
+				messages.push_back(mess);
+                pthread_mutex_unlock(&write_mutex);
 				if(messages.size() >= MESSAGESIZE){
 				    pthread_mutex_lock(&write_mutex);
                     //std::cout<<"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@222@@record               " << messages.size() << "\n";

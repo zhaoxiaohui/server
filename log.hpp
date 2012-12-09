@@ -28,7 +28,7 @@ namespace http{
 	class Log{
         public:
             /*记录日志*/
-            void record(string message);
+            void record(string& message);
 			static Log* getInstance(boost::asio::io_service& io_service_, std::string& log_fullname);
             //static Log* clog;
             ~Log();
