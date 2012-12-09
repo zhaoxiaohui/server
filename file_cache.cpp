@@ -55,8 +55,8 @@ namespace http{
                     iit->second->count++;
 				return;
 			}
-
-			while(size_ >= CACHE_MAXSIZE)
+            int st = value->content.size();
+			while(size_ + st >= CACHE_MAXSIZE)
 				remove();
 			
 			m_content *mc = new m_content();//(m_content *)malloc(sizeof(m_content));
@@ -64,10 +64,12 @@ namespace http{
 				std::cerr<<"insert error for malloc failed\n";
 				return;
 			}
-			mc->count = 1;
+			mc->count = 0;
 			mc->reply_ = value;
-
+            size_ += st;
 			m_cache.insert(std::pair<std::string, m_content*>(key,mc));
+            for(iit = m_cache.begin(); iit != m_cache.end(); iit++)
+                    iit->second->count++;
 		}
 	
 	}
